@@ -1,0 +1,98 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MyPortfolioBackend.Data;
+using MyPortfolioBackend.Models;
+
+namespace MyPortfolioBackend.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ProjectsController : ControllerBase
+    {
+        private readonly DataContext _context;
+
+        public ProjectsController(DataContext context)
+        {
+            _context = context;
+        }
+
+        // 1. GET ALL PROJECTS
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
+        {
+            return await _context.Projects.Include(p => p.Gallery).ToListAsync();
+        }
+
+        // 2. GET SINGLE PROJECT (For the Edit Form)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Project>> GetProject(int id)
+        {
+            var project = await _context.Projects
+                .Include(p => p.Gallery)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (project == null) return NotFound();
+            return project;
+        }
+
+        // 3. POST NEW PROJECT
+        [HttpPost]
+        public async Task<ActionResult<Project>> AddProject(Project project)
+        {
+            _context.Projects.Add(project);
+            await _context.SaveChangesAsync();
+            return Ok(project);
+        }
+
+        // 4. UPDATE EXISTING PROJECT (PUT)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateProject(int id, Project updatedProject)
+        {
+            var existingProject = await _context.Projects
+                .Include(p => p.Gallery)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (existingProject == null) return NotFound();
+
+            // Update Properties
+            existingProject.Title = updatedProject.Title;
+            existingProject.Category = updatedProject.Category;
+            existingProject.Brand = updatedProject.Brand;
+            existingProject.Description = updatedProject.Description;
+            existingProject.Location = updatedProject.Location;
+            existingProject.Year = updatedProject.Year;
+            existingProject.MainImage = updatedProject.MainImage;
+
+            // Update Gallery (Remove old links, add new ones)
+            _context.ProjectImages.RemoveRange(existingProject.Gallery);
+            existingProject.Gallery = updatedProject.Gallery;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ProjectExists(id)) return NotFound();
+                else throw;
+            }
+
+            return NoContent();
+        }
+
+        // 5. DELETE PROJECT
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProject(int id)
+        {
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null) return NotFound();
+
+            _context.Projects.Remove(project);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool ProjectExists(int id) => _context.Projects.Any(e => e.Id == id);
+    }
+}
