@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyPortfolioBackend.Data;
 using MyPortfolioBackend.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Cors;
 
 namespace MyPortfolioBackend.Controllers
 {
@@ -22,7 +20,6 @@ namespace MyPortfolioBackend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
         {
-            AddCorsHeaders();
             try
             {
                 return await _context.Projects.Include(p => p.Gallery).ToListAsync();
@@ -37,7 +34,6 @@ namespace MyPortfolioBackend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Project>> GetProject(int id)
         {
-            AddCorsHeaders();
             try
             {
                 var project = await _context.Projects
@@ -57,7 +53,6 @@ namespace MyPortfolioBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateProject([FromBody] Project project)
         {
-            AddCorsHeaders();
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -84,7 +79,6 @@ namespace MyPortfolioBackend.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProject(int id, Project updatedProject)
         {
-            AddCorsHeaders();
             var existingProject = await _context.Projects
                 .Include(p => p.Gallery)
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -120,7 +114,6 @@ namespace MyPortfolioBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProject(int id)
         {
-            AddCorsHeaders();
             var project = await _context.Projects.FindAsync(id);
             if (project == null) return NotFound();
 
@@ -128,22 +121,6 @@ namespace MyPortfolioBackend.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        // Handle preflight CORS requests
-        [HttpOptions]
-        public IActionResult Options()
-        {
-            AddCorsHeaders();
-            Response.Headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS";
-            Response.Headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization";
-            return Ok();
-        }
-
-        private void AddCorsHeaders()
-        {
-            // Allow any origin — adjust for production as needed
-            Response.Headers["Access-Control-Allow-Origin"] = "*";
         }
 
         private bool ProjectExists(int id) => _context.Projects.Any(e => e.Id == id);

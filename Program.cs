@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Get Connection String from Environment (Railway/Render will provide this)
+// 1. Get Connection String from Environment (Ensure "ConnectionStrings:DefaultConnection" is set on Render's Environment Variables!)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<DataContext>(options =>
@@ -16,30 +16,43 @@ builder.Services.AddControllers().AddJsonOptions(x =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 2. CORS - allow local React app during development
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp", policy =>
+    options.AddPolicy("Frontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("https://nisrine-dashboard.vercel.app")
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod();
     });
 });
 
 var app = builder.Build();
 
-// Enable Swagger in Cloud so you can see it's working
+// CRITICAL: Custom middleware that guarantees CORS headers are preserved even if the application crashes (500 Error)
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        var headers = context.Response.Headers;
+        if (!headers.ContainsKey("Access-Control-Allow-Origin"))
+        {
+            headers["Access-Control-Allow-Origin"] = "https://nisrine-dashboard.vercel.app";
+            headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
+            headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+        }
+        return Task.CompletedTask;
+    });
+    await next();
+});
+
+// Enable Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Ensure routing and CORS middleware order: UseRouting -> UseCors -> UseAuthorization
 app.UseRouting();
 
-app.UseCors("AllowReactApp");
+app.UseCors("Frontend");
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
