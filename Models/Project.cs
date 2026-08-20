@@ -11,6 +11,7 @@ namespace MyPortfolioBackend.Models
         public string Description { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public string Year { get; set; } = string.Empty;
+        // Ensure there are NO [MaxLength(255)] or [StringLength(255)] attributes here:
         public string MainImage { get; set; } = string.Empty;
         public List<ProjectImage> Gallery { get; set; } = new List<ProjectImage>();
     }

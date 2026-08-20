@@ -1,6 +1,2 @@
-@MyPortfolioBackend_HostAddress = http://localhost:5270
-
-GET {{MyPortfolioBackend_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
+@MyPortfolioBackend_HostAddress = https://nisrinedashboardbackend-1.onrender.com
+GET {{MyPortfolioBackend_HostAddress}}/api/projects

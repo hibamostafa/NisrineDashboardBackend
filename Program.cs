@@ -16,14 +16,15 @@ builder.Services.AddControllers().AddJsonOptions(x =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 2. DYNAMIC CORS (Allow everything for now so it works on Vercel immediately)
+// 2. CORS - allow local React app during development
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("CloudPolicy", policy => 
+    options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.AllowAnyOrigin() 
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowCredentials();
     });
 });
 
@@ -33,8 +34,12 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// Ensure routing and CORS middleware order: UseRouting -> UseCors -> UseAuthorization
+app.UseRouting();
+
+app.UseCors("AllowReactApp");
+
 app.UseHttpsRedirection();
-app.UseCors("CloudPolicy");
 app.UseAuthorization();
 app.MapControllers();
 
