@@ -1,8 +1,8 @@
-Environment.SetEnvironmentVariable("DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE", "false");
-
 using Microsoft.EntityFrameworkCore;
 using MyPortfolioBackend.Data;
 using System.Text.Json.Serialization;
+
+Environment.SetEnvironmentVariable("DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE", "false");
 
 var builder = WebApplication.CreateBuilder(args);
 
