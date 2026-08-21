@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using MyPortfolioBackend.Data;
+
 Environment.SetEnvironmentVariable("DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE", "false"); // Fixes the Render startup crash
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +26,7 @@ builder.Services.AddCors(options =>
               )
               .AllowAnyHeader()  // Allows JSON headers (Content-Type) and authorization tokens
               .AllowAnyMethod(); // Allows GET, POST, PUT, DELETE, and OPTIONS requests
-    });
+        });
 });
 
 var app = builder.Build();

@@ -1,2 +1,2 @@
-@MyPortfolioBackend_HostAddress = https://nisrinedashboardbackend-1.onrender.com
+@MyPortfolioBackend_HostAddress = https://nisrinedashboardbackend.onrender.com
 GET {{MyPortfolioBackend_HostAddress}}/api/projects
